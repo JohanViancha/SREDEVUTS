@@ -2,6 +2,10 @@ import { initializeApp } from "firebase/app";
 import "./App.css";
 import LoadFile from "./pages/LoadFiile";
 import Login from "./pages/Login";
+import {Image} from "@nextui-org/image";
+import Logo from "./assets/uts_virtal_logo.png";
+
+import Menu from "./components/Menu"
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -17,9 +21,13 @@ export const app = initializeApp(firebaseConfig);
 
 function App() {
   return (
-    <>
-      <LoadFile />
-    </>
+    <div className="w-screen h-screen flex flex-col items-center gap-y-60">
+   <Menu />
+
+        
+   
+      <Image width={400} src={Logo} />
+    </div>
   );
 }
 
