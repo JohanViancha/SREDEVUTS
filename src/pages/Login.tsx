@@ -1,4 +1,5 @@
-import { Button, Input } from "@nextui-org/react";
+import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input} from "@nextui-org/react";
+
 import { useState } from "react";
 import {
   MdOutlineVisibility,
@@ -7,12 +8,40 @@ import {
   MdOutlinePassword,
 } from "react-icons/md";
 import { PiMicrosoftOutlookLogo } from "react-icons/pi";
+import { getAuth, OAuthProvider, signInWithPopup } from "firebase/auth";
+import { navigate } from "wouter/use-browser-location";
 import Logo from "../assets/uts_virtal_logo.png";
+
+
+const provider = new OAuthProvider('microsoft.com');
 
 const Login = () => {
   const [isVisiblePassword, setIsVisiblePassword] = useState(false);
 
+
   const toggleVisibility = () => setIsVisiblePassword(!isVisiblePassword);
+
+  const loginWithMicrosoft = () =>{
+    const auth = getAuth();
+signInWithPopup(auth, provider)
+  .then((result) => {
+    // User is signed in.
+    // IdP data available in result.additionalUserInfo.profile.
+
+    // Get the OAuth access token and ID Token
+    const credential = OAuthProvider.credentialFromResult(result);
+    const accessToken = credential.accessToken || undefined;
+    const idToken = credential.idToken || undefined;
+
+    if(accessToken){
+      navigate('/home ')
+  }
+  })
+  .catch((error) => {
+    console.log('Error', error)
+  });
+
+  }
 
   return (
     <main className="h-full">
@@ -92,7 +121,7 @@ const Login = () => {
                 Ingresar
               </Button>
 
-              <Button color="default" className="w-full" variant="bordered">
+              <Button onClick={loginWithMicrosoft} color="default" className="w-full" variant="bordered">
                 <PiMicrosoftOutlookLogo className="text-2xl text-default-400 pointer-events-none" />
                 Ingresar con el correo institucional
               </Button>
@@ -100,6 +129,28 @@ const Login = () => {
           </form>
         </div>
       </div>
+
+      <Modal backdrop="opaque" isOpen={false}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Validación de credenciales</ModalHeader>
+              <ModalBody>
+                <p> 
+                  Las credenciales ingresadas son incorrectas. Valida tus datos e intentalo nuevamente.
+                </p>
+               
+              </ModalBody>
+              <ModalFooter>
+               
+                <Button color="primary" onPress={onClose}>
+                  Ok
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </main>
   );
 };
