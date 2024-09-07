@@ -1,11 +1,9 @@
 import { initializeApp } from "firebase/app";
+import { useEffect, useState } from "react";
+import { Route } from "wouter";
 import "./App.css";
-import LoadFile from "./pages/LoadFiile";
+import Template from "./components/Template";
 import Login from "./pages/Login";
-import {Image} from "@nextui-org/image";
-import Logo from "./assets/uts_virtal_logo.png";
-
-import Menu from "./components/Menu"
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -20,14 +18,19 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 
 function App() {
-  return (
-    <div className="w-screen h-screen flex flex-col items-center gap-y-60">
-   <Menu />
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-        
-   
-      <Image width={400} src={Logo} />
-    </div>
+  useEffect(() => {
+    const user = !sessionStorage.getItem("user");
+    if (user) {
+      setIsAuthenticated(user);
+    }
+  });
+  return (
+    <>
+      <Route path="/login" component={Login} />
+      {isAuthenticated ? <Login /> : <Template />}
+    </>
   );
 }
 
