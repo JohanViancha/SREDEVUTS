@@ -4,9 +4,15 @@ import { useForm } from "react-hook-form";
 import { write } from "xlsx";
 import { readFileXlsx, uploadXLSX } from "../services/manageFile";
 import { calculateAverage } from "../services/reportByModule";
-import {Select, SelectItem} from "@nextui-org/react";
-import {Modal, ModalContent, ModalHeader, ModalBody, ModalFooter} from "@nextui-org/react";
-
+import { Select, SelectItem } from "@nextui-org/react";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@nextui-org/react";
+import { calculateCoevaluation } from "../services/reportCoevaluation";
 
 const UploadEvaluations = () => {
   const {
@@ -15,38 +21,41 @@ const UploadEvaluations = () => {
     formState: { errors },
   } = useForm();
 
-  const generateReport = async ({ file }: any) => {
-    
-    console.log('Test', file)
-    // let workbook = await readFileXlsx(file[0]);
+  const generateReport = async (files: any) => {
+    // let workbook = await readFileXlsx(files["for-modules"][0]);
     // const sheetNames = workbook.SheetNames;
 
     // sheetNames.forEach((sheetName) => {
     //   const worksheet = workbook.Sheets[sheetName];
-    //   calculateAverage(worksheet)
+    //   calculateAverage(worksheet);
     // });
 
     // const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-    // uploadXLSX(fileContent, file[0].name);
+    // uploadXLSX(fileContent, files["for-modules"][0].name);
+
+    let workbook = await readFileXlsx(files["coevaluation"][0]);
+    const sheetNames = workbook.SheetNames;
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const newWork = calculateCoevaluation(worksheet);
+    workbook.Sheets[sheetNames[0]] = newWork;
+
+    const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
+    uploadXLSX(fileContent, files["coevaluation"][0].name);
   };
 
   return (
-
-  <>
-  
-    <form
-      className="h-100 container flex justify-center flex-col mx-auto items-center gap-6 my-6 px-44 text-center"
-      onSubmit={handleSubmit(generateReport)}
-    >
-
-      <h2 className="text-2xl font-bold mb-4">Cargue de Archivos</h2>
-
-      <Select 
-        label="Periodo de evaluación" 
-        className="max-w-xs" 
-        {...register("period", {required: true})}
+    <>
+      <form
+        className="h-100 container flex justify-center flex-col mx-auto items-center gap-6 my-6 px-44 text-center"
+        onSubmit={handleSubmit(generateReport)}
       >
-        
+        <h2 className="text-2xl font-bold mb-4">Cargue de Archivos</h2>
+
+        <Select
+          label="Periodo de evaluación"
+          className="max-w-xs"
+          {...register("period")}
+        >
           <SelectItem key={1} value={1}>
             2024-01
           </SelectItem>
@@ -60,118 +69,125 @@ const UploadEvaluations = () => {
           </SelectItem>
 
           <SelectItem key={4} value={4}>
-            2024-04 
+            2024-04
           </SelectItem>
-    
-    
-    
-      </Select>
-      {/* <Chip size="sm" variant="light" color="danger">Este campo es requerido</Chip> */}
+        </Select>
+        {/* <Chip size="sm" variant="light" color="danger">Este campo es requerido</Chip> */}
 
-    <div className="w-100 flex flex-col gap-6">
-      <h3 className="text-xl font-bold">Cargue de evaluación por módulos</h3>
-            <p>El documento de evaluación docente por módulos es un informe estructurado que recoge la evaluación de los docentes en relación con los diferentes módulos o materias que imparten. </p>
-            <input
-              accept="*.xlxs"
-              type="file"
-              className="mb-3 mx-auto rounded-lg block text-sm bg-slate-100 rad
+        <div className="w-100 flex flex-col gap-6">
+          <h3 className="text-xl font-bold">
+            Cargue de evaluación por módulos
+          </h3>
+          <p>
+            El documento de evaluación docente por módulos es un informe
+            estructurado que recoge la evaluación de los docentes en relación
+            con los diferentes módulos o materias que imparten.{" "}
+          </p>
+          <input
+            accept="*.xlxs"
+            type="file"
+            className="mb-3 mx-auto rounded-lg block text-sm bg-slate-100 rad
             file:cursor-pointer
             file:mr-4 file:py-2 file:px-4
             file:rounded-lg file:border-2
             file:text-sm file:font-semibold
             file:border-primary
             hover:file:opacity-75"
-              {...register("for-modules", {required: true})}
-            />
-            {/* <Chip className="m-auto" size="sm" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
+            {...register("for-modules")}
+          />
+          {/* <Chip className="m-auto" size="sm" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
 
-        <Divider orientation="horizontal" />
-    </div>
-    
-    <div className="w-100 flex flex-col gap-6">
-    <h3 className="text-xl font-bold mb-4">Cargue de coevaluación</h3>
-      <p>El documento de coevaluación es un informe en el que los docentes evalúan el desempeño de sus colegas, proporcionando una visión integral y colaborativa sobre las prácticas educativas.</p>
-      <input
-        accept="*.xlxs"
-        type="file"
-        className="mb-3 mx-auto rounded-lg block text-sm bg-slate-100 rad
+          <Divider orientation="horizontal" />
+        </div>
+
+        <div className="w-100 flex flex-col gap-6">
+          <h3 className="text-xl font-bold mb-4">Cargue de coevaluación</h3>
+          <p>
+            El documento de coevaluación es un informe en el que los docentes
+            evalúan el desempeño de sus colegas, proporcionando una visión
+            integral y colaborativa sobre las prácticas educativas.
+          </p>
+          <input
+            accept="*.xlxs"
+            type="file"
+            className="mb-3 mx-auto rounded-lg block text-sm bg-slate-100 rad
       file:cursor-pointer
       file:mr-4 file:py-2 file:px-4
       file:rounded-lg file:border-2
       file:text-sm file:font-semibold
       file:border-primary
       hover:file:opacity-75"
-        {...register("coevaluation", {required: true})}
-      />
-        {/* <Chip size="sm" className="m-auto" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
+            {...register("coevaluation")}
+          />
+          {/* <Chip size="sm" className="m-auto" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
 
+          <Divider orientation="horizontal" />
+        </div>
 
-<Divider orientation="horizontal" />
-    </div>
-
-
-<div className="w-100 flex flex-col gap-6">
-
-<h3 className="text-xl font-bold mb-4">Superior Jerárquico</h3>
-      <p>
-      El documento de evaluación del superior jerárquico es un informe en el que un superior, como un director o coordinador académico, evalúa el desempeño de un docente o subordinado en sus funciones educativas.</p>
-       <input
-        accept="*.xlxs"
-        type="file"
-        className="mb-3 mx-auto rounded-lg block text-sm bg-slate-100 rad
+        <div className="w-100 flex flex-col gap-6">
+          <h3 className="text-xl font-bold mb-4">Superior Jerárquico</h3>
+          <p>
+            El documento de evaluación del superior jerárquico es un informe en
+            el que un superior, como un director o coordinador académico, evalúa
+            el desempeño de un docente o subordinado en sus funciones
+            educativas.
+          </p>
+          <input
+            accept="*.xlxs"
+            type="file"
+            className="mb-3 mx-auto rounded-lg block text-sm bg-slate-100 rad
       file:cursor-pointer
       file:mr-4 file:py-2 file:px-4
       file:rounded-lg file:border-2
       file:text-sm file:font-semibold
       file:border-primary
       hover:file:opacity-75"
-        {...register("hierarchical-superior", {required: true})}
-      />
-      {/* <Chip size="sm" className="m-auto" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
-      <Divider orientation="horizontal" />
+            {...register("hierarchical-superior")}
+          />
+          {/* <Chip size="sm" className="m-auto" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
+          <Divider orientation="horizontal" />
+        </div>
 
-</div>
-
-<div className="w-100 flex flex-col gap-6">
-
-<h3 className="text-xl font-bold mb-4">Autoevaluación</h3>
-      <p>
-      La autoevaluación docente es un proceso reflexivo en el que los profesores evalúan su propio desempeño en el aula, identificando fortalezas y áreas de mejora.</p>
-       <input
-        accept="*.xlxs"
-        type="file"
-        className="mb-3 mx-auto rounded-lg block text-sm bg-slate-100 rad
+        <div className="w-100 flex flex-col gap-6">
+          <h3 className="text-xl font-bold mb-4">Autoevaluación</h3>
+          <p>
+            La autoevaluación docente es un proceso reflexivo en el que los
+            profesores evalúan su propio desempeño en el aula, identificando
+            fortalezas y áreas de mejora.
+          </p>
+          <input
+            accept="*.xlxs"
+            type="file"
+            className="mb-3 mx-auto rounded-lg block text-sm bg-slate-100 rad
       file:cursor-pointer
       file:mr-4 file:py-2 file:px-4
       file:rounded-lg file:border-2
       file:text-sm file:font-semibold
       file:border-primary
       hover:file:opacity-75"
-        {...register("autoevaluation", {required: true})}
-      />
-      {/* <Chip size="sm" className="m-auto" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
+            {...register("autoevaluation")}
+          />
+          {/* <Chip size="sm" className="m-auto" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
+        </div>
 
-</div>
-   
-   
-     <Button color="primary" type="submit">
-      Generar Informe
-    </Button>
-
-    </form> 
-    <Modal backdrop="opaque" isOpen={false}>
+        <Button color="primary" type="submit">
+          Subir archivos
+        </Button>
+      </form>
+      <Modal backdrop="opaque" isOpen={false}>
         <ModalContent>
           {(onClose) => (
             <>
-              <ModalHeader className="flex flex-col gap-1">Subida de archivos</ModalHeader>
+              <ModalHeader className="flex flex-col gap-1">
+                Subida de archivos
+              </ModalHeader>
               <ModalBody>
-                <p> 
-                  El archivo se ha subido correctamente al almacenamiento en la nube.
+                <p>
+                  El archivo se ha subido correctamente al almacenamiento en la
+                  nube.
                 </p>
-               
               </ModalBody>
               <ModalFooter>
-               
                 <Button color="primary" onPress={onClose}>
                   Ok
                 </Button>
@@ -180,10 +196,7 @@ const UploadEvaluations = () => {
           )}
         </ModalContent>
       </Modal>
-
     </>
-
-  
   );
 };
 
