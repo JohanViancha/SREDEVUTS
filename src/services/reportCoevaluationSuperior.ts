@@ -1,33 +1,31 @@
 import { TbFileUnknown } from "react-icons/tb";
 import { WorkSheet, utils } from "xlsx";
 
+const wordColunns = ["B", "C", "D", "E", "F", "G", "H"];
+let headerColunns: string[] = [];
+
 const getText = (ref: string) => {
   return ref?.slice(ref?.indexOf(":") + 2, ref.length);
 };
 
-const calculateCoevaluation = (worksheet: WorkSheet) => {
+const readHeader = (worksheet: WorkSheet) => {
+  const sheet = utils.sheet_to_json(worksheet, { header: 1 });
+  headerColunns = sheet[0].toSpliced(0, 1);
+};
+
+const calculateCoevaluationSuperior = (worksheet: WorkSheet) => {
   const ref = worksheet["!ref"] || "";
   const countRows = Number(getText(ref));
   const sheeData = deleteColumns(worksheet);
+  readHeader(sheeData);
   let step = 0;
-
-  const wordColunns = ["B", "C", "D", "E", "F", "G", "H"];
-  const headerColunns = [
-    "P. 1 /1,25",
-    "P. 2 /0,42",
-    "P. 3 /0,42",
-    "P. 4 /0,42",
-    "P. 5 /0,62",
-    "P. 6 /0,62",
-    "P. 7 /1,25",
-  ];
 
   for (let index = countRows + 1; index <= countRows * 2 - 4; index++) {
     const indexCurrent = index - countRows + 1;
     const currentLast = index + step;
     const name = getText(sheeData[`A${indexCurrent}`].v);
-    calculateValueForQuestion(sheeData, wordColunns, indexCurrent, currentLast);
-    addHeader(sheeData, wordColunns, headerColunns, currentLast);
+    calculateValueForQuestion(sheeData, indexCurrent, currentLast);
+    addHeader(sheeData, currentLast);
     utils.sheet_add_aoa(sheeData, [[name]], {
       origin: `A${currentLast}`,
     });
@@ -38,29 +36,26 @@ const calculateCoevaluation = (worksheet: WorkSheet) => {
   return sheeData;
 };
 
-const addHeader = (
-  sheeData: WorkSheet,
-  columns: string[],
-  question: string[],
-  currentLast: number
-) => {
-  columns.forEach((column: string, i: number) => {
-    utils.sheet_add_aoa(sheeData, [[question[i]]], {
+const addHeader = (sheeData: WorkSheet, currentLast: number) => {
+  wordColunns.forEach((column: string, i: number) => {
+    utils.sheet_add_aoa(sheeData, [[headerColunns[i]]], {
       origin: `${column}${currentLast}`,
     });
   });
 };
 
-const calculateRuleOfThree = (sheet: WorkSheet) => {};
-
 const calculateValueForQuestion = (
   sheet: WorkSheet,
-  wordColunns: string[],
   indexCopy: number,
   currentLast: number
 ) => {
   let countValue = 0;
+
   wordColunns.forEach((cell) => {
+    let firstValue = 0;
+    let secondValue = 0;
+    let threeValue = 0;
+
     wordColunns.forEach((cellinter) => {
       countValue +=
         sheet[`${cell}${indexCopy}`].v === sheet[`${cellinter}${indexCopy}`].v
@@ -72,18 +67,22 @@ const calculateValueForQuestion = (
     const valueNumber =
       typeof value == "string" ? value.replace(",", ".") : value;
 
-    const firstValue = parseFloat(valueNumber) * countValue;
-    const secondValue = parseFloat(((5 * valueNumber) / firstValue).toFixed(2));
-    const threeValue = (secondValue * countValue).toFixed(2)
+    firstValue = valueNumber * countValue;
 
-    utils.sheet_add_aoa(sheet, [[firstValue]], {
+    if (!isNaN(firstValue) && firstValue !== 0) {
+      secondValue = (5 * valueNumber) / firstValue;
+    }
+
+    threeValue = isNaN(secondValue) ? 0 : secondValue * countValue;
+
+    utils.sheet_add_aoa(sheet, [[firstValue.toFixed(2).replace('.',',')]], {
       origin: `${cell}${currentLast + 1}`,
     });
 
-    utils.sheet_add_aoa(sheet, [[secondValue]], {
+    utils.sheet_add_aoa(sheet, [[secondValue.toFixed(2).replace('.',',')]], {
       origin: `${cell}${currentLast + 2}`,
     });
-    utils.sheet_add_aoa(sheet, [[threeValue]], {
+    utils.sheet_add_aoa(sheet, [[threeValue.toFixed(2).replace('.',',')]], {
       origin: `${cell}${currentLast + 3}`,
     });
 
@@ -101,4 +100,4 @@ const deleteColumns = (sheet: WorkSheet) => {
   return utils.aoa_to_sheet(sheetData);
 };
 
-export { calculateCoevaluation };
+export { calculateCoevaluationSuperior };

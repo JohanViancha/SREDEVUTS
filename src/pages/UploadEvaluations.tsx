@@ -12,7 +12,7 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { calculateCoevaluation } from "../services/reportCoevaluation";
+import { calculateCoevaluationSuperior } from "../services/reportCoevaluationSuperior";
 
 const UploadEvaluations = () => {
   const {
@@ -33,14 +33,14 @@ const UploadEvaluations = () => {
     // const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
     // uploadXLSX(fileContent, files["for-modules"][0].name);
 
-    let workbook = await readFileXlsx(files["coevaluation"][0]);
+    let workbook = await readFileXlsx(files["hierarchical-superior"][0]);
     const sheetNames = workbook.SheetNames;
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const newWork = calculateCoevaluation(worksheet);
+    const newWork = calculateCoevaluationSuperior(worksheet);
     workbook.Sheets[sheetNames[0]] = newWork;
 
-    const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-    uploadXLSX(fileContent, files["coevaluation"][0].name);
+          const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
+          uploadXLSX(fileContent, files["hierarchical-superior"][0].name);
   };
 
   return (
