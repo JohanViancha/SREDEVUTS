@@ -1,18 +1,22 @@
 import { Divider } from "@nextui-org/divider";
-import { Button, Chip } from "@nextui-org/react";
+import {
+  Button,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  Select,
+  SelectItem,
+  Spinner,
+} from "@nextui-org/react";
 import { useForm } from "react-hook-form";
 import { write } from "xlsx";
 import { readFileXlsx, uploadXLSX } from "../services/manageFile";
 import { calculateAverage } from "../services/reportByModule";
-import { Select, SelectItem } from "@nextui-org/react";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@nextui-org/react";
-import { calculateCoevaluationSuperior } from "../services/reportCoevaluationSuperior";
+import { calculateCoevaluation } from "../services/reportCoevaluation";
+import { calculateAutoevaluation } from "../services/reportAutoevaluacion";
+import { useState } from "react";
 
 const UploadEvaluations = () => {
   const {
@@ -21,26 +25,77 @@ const UploadEvaluations = () => {
     formState: { errors },
   } = useForm();
 
-  const generateReport = async (files: any) => {
-    // let workbook = await readFileXlsx(files["for-modules"][0]);
-    // const sheetNames = workbook.SheetNames;
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [stateDialog, setStateDialog] = useState(0);
 
-    // sheetNames.forEach((sheetName) => {
-    //   const worksheet = workbook.Sheets[sheetName];
-    //   calculateAverage(worksheet);
-    // });
+  const generateReportForModules = async (file: File) => {
+    let workbook = await readFileXlsx(file);
 
-    // const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-    // uploadXLSX(fileContent, files["for-modules"][0].name);
+    workbook.SheetNames.forEach((sheetName) => {
+      const worksheet = workbook.Sheets[sheetName];
+      calculateAverage(worksheet);
+    });
 
-    let workbook = await readFileXlsx(files["hierarchical-superior"][0]);
+    const fileContent = await write(workbook, {
+      bookType: "xlsx",
+      type: "buffer",
+    });
+    await uploadXLSX(fileContent, file.name);
+  };
+
+  const generateReportAutoevalution = async (file: File) => {
+    let workbook = await readFileXlsx(file);
     const sheetNames = workbook.SheetNames;
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const newWork = calculateCoevaluationSuperior(worksheet);
+    const newWork = calculateAutoevaluation(worksheet);
     workbook.Sheets[sheetNames[0]] = newWork;
 
-          const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-          uploadXLSX(fileContent, files["hierarchical-superior"][0].name);
+    const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
+    await uploadXLSX(fileContent, file.name);
+  };
+
+  const generateReportCoevaluation = async (file: File) => {
+    let workbook = await readFileXlsx(file);
+    const sheetNames = workbook.SheetNames;
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const newWork = calculateCoevaluation(worksheet);
+    workbook.Sheets[sheetNames[0]] = newWork;
+
+    const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
+    await uploadXLSX(fileContent, file.name);
+  };
+
+  const generateReportHierarchicalSuperior = async (file: File) => {
+    let workbook = await readFileXlsx(file);
+    const sheetNames = workbook.SheetNames;
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const newWork = calculateCoevaluation(worksheet);
+    workbook.Sheets[sheetNames[0]] = newWork;
+
+    const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
+    await uploadXLSX(fileContent, file.name);
+  };
+
+  const generateReport = async (files: any) => {
+    try {
+      setStateDialog(1);
+      await generateReportForModules(files["for-modules"][0]);
+      await generateReportAutoevalution(files["autoevaluation"][0]);
+      await generateReportCoevaluation(files["coevaluation"][0]);
+      await generateReportHierarchicalSuperior(
+        files["hierarchical-superior"][0]
+      );
+      setTitle("Subir archivos");
+      setBody("Los archivos han sido guardados correctamente");
+      setStateDialog(2);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onClose = () => {
+    setStateDialog(0);
   };
 
   return (
@@ -174,27 +229,29 @@ const UploadEvaluations = () => {
           Subir archivos
         </Button>
       </form>
-      <Modal backdrop="opaque" isOpen={false}>
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex flex-col gap-1">
-                Subida de archivos
-              </ModalHeader>
-              <ModalBody>
-                <p>
-                  El archivo se ha subido correctamente al almacenamiento en la
-                  nube.
-                </p>
-              </ModalBody>
-              <ModalFooter>
-                <Button color="primary" onPress={onClose}>
-                  Ok
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
+
+      <Modal backdrop="opaque" isOpen={stateDialog !== 0}>
+        {stateDialog === 1 ? (
+          <div className="flex justify-center items-center h-screen w-screen fixed z-40 bg-neutral-800 top-0 opacity-90">
+            <Spinner label="Cargando..." color="primary" labelColor="primary"/>
+           
+          </div>
+       
+        ) : (
+          <ModalContent>
+            <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
+            <Divider orientation="horizontal" />
+
+            <ModalBody>
+              <p>{body}</p>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="primary" onClick={onClose}>
+                Ok
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        )}
       </Modal>
     </>
   );
