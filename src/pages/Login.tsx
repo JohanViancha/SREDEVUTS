@@ -8,7 +8,7 @@ import {
   ModalHeader,
 } from "@nextui-org/react";
 
-import { getAuth, OAuthProvider, signInWithPopup } from "firebase/auth";
+import { OAuthProvider, signInWithPopup } from "firebase/auth";
 import { useState } from "react";
 import {
   MdEmail,
@@ -17,18 +17,20 @@ import {
   MdOutlineVisibilityOff,
 } from "react-icons/md";
 import { PiMicrosoftOutlookLogo } from "react-icons/pi";
-import { navigate } from "wouter/use-browser-location";
 import Logo from "../assets/uts_virtal_logo.png";
+import { auth } from "../../firebase.config.ts"
+import { useNavigate } from "react-router-dom";
 
 const provider = new OAuthProvider("microsoft.com");
 
 const Login = () => {
+  const navigate = useNavigate();
+
   const [isVisiblePassword, setIsVisiblePassword] = useState(false);
 
   const toggleVisibility = () => setIsVisiblePassword(!isVisiblePassword);
 
   const loginWithMicrosoft = () => {
-    const auth = getAuth();
     signInWithPopup(auth, provider)
       .then((result) => {
         const credential = OAuthProvider.credentialFromResult(result);
@@ -36,7 +38,7 @@ const Login = () => {
         const idToken = credential.idToken || undefined;
 
         if (accessToken) {
-          navigate("/home");
+          navigate("/app/home");
           sessionStorage.setItem('user', JSON.stringify(result.user))
         }
       })

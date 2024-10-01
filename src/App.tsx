@@ -1,21 +1,37 @@
-import { initializeApp } from "firebase/app";
 import { useEffect, useState } from "react";
-import { Route } from "wouter";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./App.css";
 import Template from "./components/Template";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
+import UploadEvaluations from "./pages/UploadEvaluations";
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY,
-  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_APP_ID,
-  measurementId: import.meta.env.VITE_MEASUREMENT_ID,
-};
-
-export const app = initializeApp(firebaseConfig);
+const router = createBrowserRouter([
+  {
+    path:'/login',
+    Component: Login
+  },
+  {
+    id: "root",
+    path: "app/",
+    Component: Template,
+    children: [
+      {
+        path: "home",
+        Component: Home,
+      },
+      {
+        path: "start-process",
+        Component: UploadEvaluations,
+      },
+      {
+        path: "manage",
+        Component: Home,
+      },
+    ],
+  },
+  {path: '*' , Component: Login}
+]);
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -23,14 +39,12 @@ function App() {
   useEffect(() => {
     const user = !sessionStorage.getItem("user");
     if (user) {
+      console.log(isAuthenticated);
       setIsAuthenticated(user);
     }
   });
   return (
-    <>
-      <Route path="/login" component={Login} />
-      {isAuthenticated ? <Login /> : <Template />}
-    </>
+    <RouterProvider router={router} fallbackElement={<p>Initial Load...</p>} />
   );
 }
 

@@ -1,13 +1,11 @@
 import { getStorage, ref, uploadBytes } from "firebase/storage";
 import { read, utils, WorkSheet } from "xlsx";
 
-const uploadXLSX = async (file: File, filename: string) => {
+const uploadXLSX = async (file: File, filename: string, directory: string) => {
   try {
     const storage = getStorage();
-    const storageRef = ref(storage, `2024-1/${filename}`);
-    await uploadBytes(storageRef, file).then((snapshot: any) => {
-      return console.log("Uploaded a blob or file!", snapshot);
-    });
+    const storageRef = ref(storage, `${directory}/${filename}`);
+    await uploadBytes(storageRef, file).then();
 
     return "ok";
   } catch (error) {
@@ -56,7 +54,6 @@ const addHeaderQuestions = (
   headerColunns: string[]
 ) => {
   wordColunns.forEach((column: string, i: number) => {
-    console.log(headerColunns[i])
     utils.sheet_add_aoa(sheeData, [[headerColunns[i]]], {
       origin: `${column}${currentLast}`,
     });

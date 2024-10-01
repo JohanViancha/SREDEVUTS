@@ -4,9 +4,11 @@ import ManageEvaluation from "../pages/ManageEvaluation";
 import { Route } from "wouter";
 import Home from "../pages/Home";
 import UploadEvaluations from "../pages/UploadEvaluations";
+import { Outlet } from "react-router-dom";
 
 const Template = () => {
   const [user, setUser] = useState({});
+  
   useEffect(() => {
     const user = sessionStorage.getItem("user");
     if (user) {
@@ -20,9 +22,7 @@ const Template = () => {
         <Menu user={user} />
       </div>
       <div>
-        <Route path="/start-process" component={UploadEvaluations} />
-        <Route path="/home" component={Home} />
-        <Route path="/manage" component={ManageEvaluation} />
+      <Outlet />
       </div>
     </div>
   );

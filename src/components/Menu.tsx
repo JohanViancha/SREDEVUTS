@@ -7,32 +7,31 @@ import {
   NavbarContent,
   NavbarItem,
   Button,
-  Link,
 } from "@nextui-org/react";
 import { Divider } from "@nextui-org/react";
 import { IoExit } from "react-icons/io5";
-import { Link as LinkWouter } from "wouter";
 import { User } from "@nextui-org/user";
 import { Tooltip } from "@nextui-org/tooltip";
-
 import { useState } from "react";
-import { navigate } from "wouter/use-browser-location";
+import { Link, useNavigate } from "react-router-dom";
 
 const Menu = ({ user }) => {
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const menuItems = [
     {
       label: "Iniciar proceso",
-      path: "/start-process",
+      path: "start-process",
     },
     {
       label: "Evaluaciones",
-      path: "/manage",
+      path: "manage",
     },
     {
       label: "Usuarios",
-      path: "/users",
+      path: "users",
     },
   ];
 
@@ -64,13 +63,13 @@ const Menu = ({ user }) => {
 
         {menuItems.map((item, index) => (
           <NavbarItem key={`${item}-${index}`}>
-            <LinkWouter
+            <Link 
               className="link"
               to={item.path}
               state={{ animate: true }}
             >
               {item.label}
-            </LinkWouter>
+            </Link>
           </NavbarItem>
         ))}
       </NavbarContent>
@@ -91,9 +90,9 @@ const Menu = ({ user }) => {
       <NavbarMenu className="">
         {menuItems.map((item, index) => (
           <NavbarMenuItem key={`${item}-${index}`}>
-            <LinkWouter className="w-full" to={item.path}>
+            <Link className="w-full" to={item.path}>
               {item.label}
-            </LinkWouter>
+            </Link>
           </NavbarMenuItem>
         ))}
         <Divider orientation="horizontal" />

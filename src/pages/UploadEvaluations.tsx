@@ -16,7 +16,10 @@ import { readFileXlsx, uploadXLSX } from "../services/manageFile";
 import { calculateAverage } from "../services/reportByModule";
 import { calculateCoevaluation } from "../services/reportCoevaluation";
 import { calculateAutoevaluation } from "../services/reportAutoevaluacion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getDatabase, ref, set } from "firebase/database";
+import { db } from "../../firebase.config";
+import { v4 as uuidv4 } from "uuid";
 
 const UploadEvaluations = () => {
   const {
@@ -28,8 +31,9 @@ const UploadEvaluations = () => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [stateDialog, setStateDialog] = useState(0);
+  const [dataCurrent, setDateCurrent] = useState(new Date());
 
-  const generateReportForModules = async (file: File) => {
+  const generateReportForModules = async (file: File, directory: string) => {
     let workbook = await readFileXlsx(file);
 
     workbook.SheetNames.forEach((sheetName) => {
@@ -41,10 +45,10 @@ const UploadEvaluations = () => {
       bookType: "xlsx",
       type: "buffer",
     });
-    await uploadXLSX(fileContent, file.name);
+    await uploadXLSX(fileContent, file.name, directory);
   };
 
-  const generateReportAutoevalution = async (file: File) => {
+  const generateReportAutoevalution = async (file: File, directory: string) => {
     let workbook = await readFileXlsx(file);
     const sheetNames = workbook.SheetNames;
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -52,10 +56,25 @@ const UploadEvaluations = () => {
     workbook.Sheets[sheetNames[0]] = newWork;
 
     const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-    await uploadXLSX(fileContent, file.name);
+    await uploadXLSX(fileContent, file.name, directory);
   };
 
-  const generateReportCoevaluation = async (file: File) => {
+  const generateReportCoevaluation = async (file: File, directory: string) => {
+
+      let workbook = await readFileXlsx(file);
+      const sheetNames = workbook.SheetNames;
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const newWork = calculateCoevaluation(worksheet);
+      workbook.Sheets[sheetNames[0]] = newWork;
+  
+      const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
+      await uploadXLSX(fileContent, file.name, directory);
+  };
+
+  const generateReportHierarchicalSuperior = async (
+    file: File,
+    directory: string
+  ) => {
     let workbook = await readFileXlsx(file);
     const sheetNames = workbook.SheetNames;
     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -63,40 +82,45 @@ const UploadEvaluations = () => {
     workbook.Sheets[sheetNames[0]] = newWork;
 
     const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-    await uploadXLSX(fileContent, file.name);
+    await uploadXLSX(fileContent, file.name, directory);
   };
 
-  const generateReportHierarchicalSuperior = async (file: File) => {
-    let workbook = await readFileXlsx(file);
-    const sheetNames = workbook.SheetNames;
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const newWork = calculateCoevaluation(worksheet);
-    workbook.Sheets[sheetNames[0]] = newWork;
-
-    const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-    await uploadXLSX(fileContent, file.name);
-  };
-
-  const generateReport = async (files: any) => {
+  const generateReport = async (data) => {
     try {
       setStateDialog(1);
-      await generateReportForModules(files["for-modules"][0]);
-      await generateReportAutoevalution(files["autoevaluation"][0]);
-      await generateReportCoevaluation(files["coevaluation"][0]);
+      await generateReportForModules(data["for-modules"][0], data.period);
+      await generateReportAutoevalution(data["autoevaluation"][0], data.period);
+      await generateReportCoevaluation(data["coevaluation"][0], data.period);
       await generateReportHierarchicalSuperior(
-        files["hierarchical-superior"][0]
+        data["hierarchical-superior"][0],
+        data.period
       );
       setTitle("Subir archivos");
       setBody("Los archivos han sido guardados correctamente");
       setStateDialog(2);
+
+      set(ref(db, "evaluations/" + `${uuidv4()}`), {
+        period: data.period,
+        uploadDate: dataCurrent.toLocaleString(),
+        state: 0,
+        responsibleUser: "Johan Ferney Viancha",
+      })
+        .then((data) => console.log(data))
+        .catch((error) => console.log(error));
     } catch (error) {
-      console.log(error);
+      setTitle("Subir archivos");
+      setBody("Error al tratar de subir los archivos a la nube");
+      setStateDialog(2);
     }
   };
 
   const onClose = () => {
     setStateDialog(0);
   };
+
+  useEffect(() => {
+    setDateCurrent(new Date());
+  }, []);
 
   return (
     <>
@@ -105,34 +129,42 @@ const UploadEvaluations = () => {
         onSubmit={handleSubmit(generateReport)}
       >
         <h2 className="text-2xl font-bold mb-4">Cargue de Archivos</h2>
-
         <Select
           label="Periodo de evaluación"
           className="max-w-xs"
           {...register("period")}
         >
-          <SelectItem key={1} value={1}>
-            2024-01
+          <SelectItem
+            key={`${dataCurrent.getFullYear()}-01`}
+            value={`${dataCurrent.getFullYear()}-01`}
+          >
+            {`${dataCurrent.getFullYear()}-01`}
+          </SelectItem>
+          <SelectItem
+            key={`${dataCurrent.getFullYear()}-02`}
+            value={`${dataCurrent.getFullYear()}-02`}
+          >
+            {`${dataCurrent.getFullYear()}-02`}
           </SelectItem>
 
-          <SelectItem key={2} value={2}>
-            2024-02
+          <SelectItem
+            key={`${dataCurrent.getFullYear()}-03`}
+            value={`${dataCurrent.getFullYear()}-03`}
+          >
+            {`${dataCurrent.getFullYear()}-03`}
           </SelectItem>
 
-          <SelectItem key={3} value={3}>
-            2024-03
-          </SelectItem>
-
-          <SelectItem key={4} value={4}>
-            2024-04
+          <SelectItem
+            key={`${dataCurrent.getFullYear()}-04`}
+            value={`${dataCurrent.getFullYear()}-04`}
+          >
+            {`${dataCurrent.getFullYear()}-04`}
           </SelectItem>
         </Select>
         {/* <Chip size="sm" variant="light" color="danger">Este campo es requerido</Chip> */}
 
         <div className="w-100 flex flex-col gap-6">
-          <h3 className="text-xl font-bold">
-            Cargue de evaluación por módulos
-          </h3>
+          <h3 className="text-xl font-bold">Evaluación por módulos</h3>
           <p>
             El documento de evaluación docente por módulos es un informe
             estructurado que recoge la evaluación de los docentes en relación
@@ -156,7 +188,7 @@ const UploadEvaluations = () => {
         </div>
 
         <div className="w-100 flex flex-col gap-6">
-          <h3 className="text-xl font-bold mb-4">Cargue de coevaluación</h3>
+          <h3 className="text-xl font-bold mb-4">Coevaluación</h3>
           <p>
             El documento de coevaluación es un informe en el que los docentes
             evalúan el desempeño de sus colegas, proporcionando una visión
@@ -233,10 +265,8 @@ const UploadEvaluations = () => {
       <Modal backdrop="opaque" isOpen={stateDialog !== 0}>
         {stateDialog === 1 ? (
           <div className="flex justify-center items-center h-screen w-screen fixed z-40 bg-neutral-800 top-0 opacity-90">
-            <Spinner label="Cargando..." color="primary" labelColor="primary"/>
-           
+            <Spinner label="Cargando..." color="primary" labelColor="primary" />
           </div>
-       
         ) : (
           <ModalContent>
             <ModalHeader className="flex flex-col gap-1">{title}</ModalHeader>
