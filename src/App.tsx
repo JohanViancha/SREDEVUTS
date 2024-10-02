@@ -5,6 +5,7 @@ import Template from "./components/Template";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import UploadEvaluations from "./pages/UploadEvaluations";
+import ManageEvaluation from "./pages/ManageEvaluation";
 
 const router = createBrowserRouter([
   {
@@ -26,7 +27,7 @@ const router = createBrowserRouter([
       },
       {
         path: "manage",
-        Component: Home,
+        Component: ManageEvaluation,
       },
     ],
   },

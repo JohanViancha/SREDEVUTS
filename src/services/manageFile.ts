@@ -3,7 +3,6 @@ import { read, utils, WorkSheet } from "xlsx";
 
 const uploadXLSX = async (file: File, filename: string, directory: string) => {
   try {
-    const storage = getStorage();
     const storageRef = ref(storage, `${directory}/${filename}`);
     await uploadBytes(storageRef, file).then();
 
