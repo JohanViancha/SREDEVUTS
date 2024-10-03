@@ -20,17 +20,16 @@ import {
   TableRow,
   Tooltip,
 } from "@nextui-org/react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { onValue, ref, ref as refDB, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { FaAddressCard, FaCheck, FaUser, FaUserCheck } from "react-icons/fa";
 import { FaUserXmark } from "react-icons/fa6";
 import { IoMdClose } from "react-icons/io";
 import { MdAlternateEmail, MdEdit } from "react-icons/md";
-import { auth, db } from "../../firebase.config";
-import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { digits, lower, randomPassword, upper } from "secure-random-password";
+import { auth, db } from "../../firebase.config";
 
 interface User {
   id: string;
@@ -44,14 +43,7 @@ interface User {
 }
 
 const Users = () => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm({
+  const { register, handleSubmit, reset, setValue, watch } = useForm({
     defaultValues: {
       id: "",
       name: "",
@@ -121,18 +113,15 @@ const Users = () => {
           createDate: new Date().toLocaleString(),
         }).then();
 
-      
-
-        createUserWithEmailAndPassword(auth, user.email, 'tuiESV23Sasvmag')
+        createUserWithEmailAndPassword(auth, user.email, "tuiESV23Sasvmag")
           .then((userCredential) => {
-            // Signed in
             const user = userCredential.user;
-            // ...
+            sessionStorage.setItem("user", JSON.stringify(user));
           })
           .catch((error) => {
             const errorCode = error.code;
             const errorMessage = error.message;
-            // ..
+            console.log(errorCode, errorMessage);
           });
       }
 

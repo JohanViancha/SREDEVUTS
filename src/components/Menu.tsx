@@ -15,8 +15,7 @@ import { Tooltip } from "@nextui-org/tooltip";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const Menu = ({ user }) => {
-
+const Menu = ({ user }: { user: any }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -36,10 +35,9 @@ const Menu = ({ user }) => {
   ];
 
   const closeSesion = () => {
-    sessionStorage.clear()
+    sessionStorage.clear();
     navigate("/login");
-
-  }
+  };
 
   return (
     <Navbar isBordered isMenuOpen={isMenuOpen} onMenuOpenChange={setIsMenuOpen}>
@@ -63,11 +61,7 @@ const Menu = ({ user }) => {
 
         {menuItems.map((item, index) => (
           <NavbarItem key={`${item}-${index}`}>
-            <Link 
-              className="link"
-              to={item.path}
-              state={{ animate: true }}
-            >
+            <Link className="link" to={item.path} state={{ animate: true }}>
               {item.label}
             </Link>
           </NavbarItem>
@@ -76,11 +70,17 @@ const Menu = ({ user }) => {
 
       <NavbarContent justify="end">
         <NavbarItem className="hidden md:flex">
-          <Link href="#">{user.displayName}</Link>
+          <Link to={"#"} >{user.displayName}</Link>
         </NavbarItem>
         <NavbarItem>
           <Tooltip content="Cerrar sesión" color="primary">
-            <Button onClick={closeSesion} as={Link} color="primary" href="#" variant="flat">
+            <Button
+              onClick={closeSesion}
+              as={Link}
+              color="primary"
+              href="#"
+              variant="flat"
+            >
               <IoExit className="text-2xl" />
             </Button>
           </Tooltip>

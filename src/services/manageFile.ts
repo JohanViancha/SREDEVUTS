@@ -1,5 +1,6 @@
-import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { ref, uploadBytes } from "firebase/storage";
 import { read, utils, WorkSheet } from "xlsx";
+import { storage } from "../../firebase.config";
 
 const uploadXLSX = async (file: File, filename: string, directory: string) => {
   try {
@@ -20,14 +21,14 @@ const readFileXlsx = async (file: File) => {
 };
 
 const readHeader = (worksheet: WorkSheet, countCell: {start: number, count: number}) => {
-  const sheet = utils.sheet_to_json(worksheet, { header: 1 });
+  const sheet = utils.sheet_to_json<any>(worksheet, { header: 1 });
   return sheet[0].toSpliced(countCell.start, countCell.count);
 };
 
 const deleteColumns = (sheet: WorkSheet, start: number, deletCount: number) => {
-  const sheetData = utils.sheet_to_json(sheet, { header: 1 });
+  const sheetData = utils.sheet_to_json<any>(sheet, { header: 1 });
 
-  sheetData.forEach((row: unknown) => {
+  sheetData.forEach((row: any) => {
     row.splice(start, deletCount);
   });
 
@@ -107,12 +108,9 @@ const calculateValueForQuestion = (
 };
 
 export {
-  readFileXlsx,
-  uploadXLSX,
-  readHeader,
-  deleteColumns,
-  getCountRows,
-  getValueCell,
   addHeaderQuestions,
-  calculateValueForQuestion,
+  calculateValueForQuestion, deleteColumns,
+  getCountRows,
+  getValueCell, readFileXlsx, readHeader, uploadXLSX
 };
+

@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
-import Menu from "./Menu";
-import ManageEvaluation from "../pages/ManageEvaluation";
-import { Route } from "wouter";
-import Home from "../pages/Home";
-import UploadEvaluations from "../pages/UploadEvaluations";
 import { Outlet } from "react-router-dom";
+import Menu from "./Menu";
 
 const Template = () => {
   const [user, setUser] = useState({});

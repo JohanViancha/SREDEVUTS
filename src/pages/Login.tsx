@@ -9,35 +9,23 @@ import {
   ModalHeader,
 } from "@nextui-org/react";
 
-import {
-  OAuthProvider,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-} from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import {
   MdEmail,
   MdOutlinePassword,
   MdOutlineVisibility,
   MdOutlineVisibilityOff,
 } from "react-icons/md";
-import { PiMicrosoftOutlookLogo } from "react-icons/pi";
-import Logo from "../assets/uts_virtal_logo.png";
-import { auth } from "../../firebase.config.ts";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-
-const provider = new OAuthProvider("microsoft.com");
+import { auth } from "../../firebase.config.ts";
 
 const Login = () => {
   const navigate = useNavigate();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const { register, handleSubmit } = useForm();
   const [isVisiblePassword, setIsVisiblePassword] = useState(false);
-  const [isOpen, setisOpen] = useState(false)
+  const [isOpen, setisOpen] = useState(false);
 
   const toggleVisibility = () => setIsVisiblePassword(!isVisiblePassword);
 
@@ -50,32 +38,14 @@ const Login = () => {
         if (user) {
           navigate("/app/home");
           sessionStorage.setItem("user", JSON.stringify(user));
-        }else{
-          setisOpen(true)
+        } else {
+          setisOpen(true);
         }
         // ...
       })
       .catch((error) => {
-        setisOpen(true)
-        const errorCode = error.code;
-        const errorMessage = error.message;
-      });
-  };
-
-  const loginWithMicrosoft = () => {
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        const credential = OAuthProvider.credentialFromResult(result);
-        const accessToken = credential.accessToken || undefined;
-        const idToken = credential.idToken || undefined;
-
-        if (accessToken) {
-          navigate("/app/home");
-          sessionStorage.setItem("user", JSON.stringify(result.user));
-        }
-      })
-      .catch((error) => {
-        console.log("Error", error);
+        setisOpen(true);
+        console.log(error);
       });
   };
 
@@ -85,7 +55,9 @@ const Login = () => {
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           <img
             className="mx-auto sm:h-16 w-auto h-14"
-            src={Logo}
+            src={
+              "https://www.utsvirtual.edu.co/sitio/wp-content/uploads/2018/08/uts-virtal-logo-nuevo.png"
+            }
             alt="Logo UTS virtual"
           />
           <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
@@ -197,7 +169,11 @@ const Login = () => {
                 </p>
               </ModalBody>
               <ModalFooter>
-                <Button onClick={()=> setisOpen(false)} color="primary" onPress={onClose}>
+                <Button
+                  onClick={() => setisOpen(false)}
+                  color="primary"
+                  onPress={onClose}
+                >
                   Ok
                 </Button>
               </ModalFooter>
