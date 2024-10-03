@@ -21,10 +21,12 @@ import { readFileXlsx, uploadXLSX } from "../services/manageFile";
 import { calculateAutoevaluation } from "../services/reportAutoevaluacion";
 import { calculateAverage } from "../services/reportByModule";
 import { calculateCoevaluation } from "../services/reportCoevaluation";
+import { useNavigate } from "react-router-dom";
 
 const UploadEvaluations = () => {
   const {
     register,
+    reset,
     handleSubmit,
     formState: { errors },
   } = useForm();
@@ -33,6 +35,7 @@ const UploadEvaluations = () => {
   const [body, setBody] = useState("");
   const [stateDialog, setStateDialog] = useState(0);
   const [dataCurrent, setDateCurrent] = useState(new Date());
+  const navigate = useNavigate();
 
   const generateReportForModules = async (file: File, directory: string) => {
     let workbook = await readFileXlsx(file);
@@ -99,11 +102,13 @@ const UploadEvaluations = () => {
       setBody("Los archivos han sido guardados correctamente");
       setStateDialog(2);
 
+      const { displayName } = JSON.parse(sessionStorage.getItem("user") || "");
+
       set(ref(db, "evaluations/" + `${uuidv4()}`), {
         period: data.period,
         uploadDate: dataCurrent.toLocaleString(),
-        state: 0,
-        responsibleUser: "Johan Ferney Viancha",
+        state: 1,
+        responsibleUser: displayName,
       })
         .then((data) => console.log(data))
         .catch((error) => console.log(error));
@@ -116,6 +121,8 @@ const UploadEvaluations = () => {
 
   const onClose = () => {
     setStateDialog(0);
+    reset();
+    navigate("/app/home");
   };
 
   useEffect(() => {
@@ -166,7 +173,7 @@ const UploadEvaluations = () => {
             Este campo es requerido
           </Chip>
         )}
-        
+
         <div className="w-unit-9xl flex flex-col gap-6">
           <h3 className="text-xl font-bold">Evaluación por módulos</h3>
           <p className="">

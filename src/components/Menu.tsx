@@ -70,7 +70,7 @@ const Menu = ({ user }: { user: any }) => {
 
       <NavbarContent justify="end">
         <NavbarItem className="hidden md:flex">
-          <Link to={"#"} >{user.displayName}</Link>
+          <Link to={"#"}>{user.displayName}</Link>
         </NavbarItem>
         <NavbarItem>
           <Tooltip content="Cerrar sesión" color="primary">

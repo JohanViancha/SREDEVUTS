@@ -7,6 +7,7 @@ const Template = () => {
   
   useEffect(() => {
     const user = sessionStorage.getItem("user");
+    console.log(user)
     if (user) {
       setUser(JSON.parse(user));
     }

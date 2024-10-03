@@ -20,7 +20,7 @@ import {
   TableRow,
   Tooltip,
 } from "@nextui-org/react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { onValue, ref, ref as refDB, set, update } from "firebase/database";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -115,8 +115,13 @@ const Users = () => {
 
         createUserWithEmailAndPassword(auth, user.email, "tuiESV23Sasvmag")
           .then((userCredential) => {
-            const user = userCredential.user;
-            sessionStorage.setItem("user", JSON.stringify(user));
+            const userProfile = userCredential.user;
+            
+            updateProfile(userProfile, {
+              displayName: user.name,
+            })
+
+
           })
           .catch((error) => {
             const errorCode = error.code;
@@ -190,78 +195,79 @@ const Users = () => {
           </TableColumn>
         </TableHeader>
         <TableBody>
-          {Object.keys(users).map((key: any) => {
-            return (
-              <TableRow key={key} className="text-left">
-                <TableCell>{users[key].name}</TableCell>
-                <TableCell>{users[key].identification}</TableCell>
-                <TableCell>
-                  {users[key].identification === "CC"
-                    ? "Cédula de Ciudadanía"
-                    : users[key].identification === "TI"
-                    ? "Tarjeta de identidad"
-                    : "Cédula de Extranjería"}
-                </TableCell>
-                <TableCell>{users[key].email}</TableCell>
-                <TableCell>
-                  {users[key].userType === 1 ? "Operativo" : "Administrador"}
-                </TableCell>
-                <TableCell>{users[key].createDate}</TableCell>
-                <TableCell>
-                  {users[key].state ? (
-                    <Chip
-                      className="pl-3"
-                      startContent={<FaCheck size={13} />}
-                      variant="flat"
-                      color="success"
-                    >
-                      Activo
-                    </Chip>
-                  ) : (
-                    <Chip
-                      className="pl-3"
-                      startContent={<IoMdClose size={13} />}
-                      variant="flat"
-                      color="danger"
-                    >
-                      Inactivo
-                    </Chip>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="relative flex items-center gap-2">
+          {users &&
+            Object.keys(users).map((key: any) => {
+              return (
+                <TableRow key={key} className="text-left">
+                  <TableCell>{users[key].name}</TableCell>
+                  <TableCell>{users[key].identification}</TableCell>
+                  <TableCell>
+                    {users[key].identification === "CC"
+                      ? "Cédula de Ciudadanía"
+                      : users[key].identification === "TI"
+                      ? "Tarjeta de identidad"
+                      : "Cédula de Extranjería"}
+                  </TableCell>
+                  <TableCell>{users[key].email}</TableCell>
+                  <TableCell>
+                    {users[key].userType === 1 ? "Operativo" : "Administrador"}
+                  </TableCell>
+                  <TableCell>{users[key].createDate}</TableCell>
+                  <TableCell>
                     {users[key].state ? (
-                      <Tooltip color="danger" content="Inactivar usuario">
-                        <span
-                          onClick={() => updateState(false, users[key].id)}
-                          className="text-lg text-danger cursor-pointer active:opacity-50"
-                        >
-                          <FaUserXmark />
-                        </span>
-                      </Tooltip>
-                    ) : (
-                      <Tooltip color="success" content="Activar usuario">
-                        <span
-                          onClick={() => updateState(true, users[key].id)}
-                          className="text-lg text-success cursor-pointer active:opacity-50"
-                        >
-                          <FaUserCheck />
-                        </span>
-                      </Tooltip>
-                    )}
-                    <Tooltip color="warning" content="Editar evaluación">
-                      <span
-                        onClick={() => loadUser(users[key])}
-                        className="text-lg text-orange-500 cursor-pointer active:opacity-50"
+                      <Chip
+                        className="pl-3"
+                        startContent={<FaCheck size={13} />}
+                        variant="flat"
+                        color="success"
                       >
-                        <MdEdit />
-                      </span>
-                    </Tooltip>
-                  </div>
-                </TableCell>
-              </TableRow>
-            );
-          })}
+                        Activo
+                      </Chip>
+                    ) : (
+                      <Chip
+                        className="pl-3"
+                        startContent={<IoMdClose size={13} />}
+                        variant="flat"
+                        color="danger"
+                      >
+                        Inactivo
+                      </Chip>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="relative flex items-center gap-2">
+                      {users[key].state ? (
+                        <Tooltip color="danger" content="Inactivar usuario">
+                          <span
+                            onClick={() => updateState(false, users[key].id)}
+                            className="text-lg text-danger cursor-pointer active:opacity-50"
+                          >
+                            <FaUserXmark />
+                          </span>
+                        </Tooltip>
+                      ) : (
+                        <Tooltip color="success" content="Activar usuario">
+                          <span
+                            onClick={() => updateState(true, users[key].id)}
+                            className="text-lg text-success cursor-pointer active:opacity-50"
+                          >
+                            <FaUserCheck />
+                          </span>
+                        </Tooltip>
+                      )}
+                      <Tooltip color="warning" content="Editar evaluación">
+                        <span
+                          onClick={() => loadUser(users[key])}
+                          className="text-lg text-orange-500 cursor-pointer active:opacity-50"
+                        >
+                          <MdEdit />
+                        </span>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
         </TableBody>
       </Table>
 
@@ -291,6 +297,7 @@ const Users = () => {
                 autoFocus
                 label="Tipo de identificación"
                 value={identificationTypeValue}
+                defaultSelectedKeys={["CC"]}
                 {...register("identificationType")}
               >
                 <SelectItem key={`CC`} value={`CC`}>
@@ -327,7 +334,7 @@ const Users = () => {
             <br />
             <Divider />
             <ModalFooter>
-              <Button color="default" onClick={() => setValue("name", "Tetst")}>
+              <Button color="default" onClick={() => setIsOpen(false)}>
                 Cancelar
               </Button>
               <Button type="submit" color="primary">

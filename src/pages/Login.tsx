@@ -19,7 +19,8 @@ import {
   MdOutlineVisibilityOff,
 } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../../firebase.config.ts";
+import { auth, db } from "../../firebase.config.ts";
+import { equalTo, get, orderByChild, query, ref } from "firebase/database";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -32,8 +33,8 @@ const Login = () => {
   const loginWithEmailAndPassword = async (data: any) => {
     signInWithEmailAndPassword(auth, data.email, data.password)
       .then((userCredential) => {
-        // Signed in
         const user = userCredential.user;
+        let userType = 0;
 
         if (user) {
           navigate("/app/home");
