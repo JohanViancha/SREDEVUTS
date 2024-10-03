@@ -84,7 +84,7 @@ const ManageEvaluation = () => {
 
   return (
     <div className="h-100 container flex justify-center flex-col mx-auto items-center gap-6 my-6 px-44 text-center">
-      <h2 className="text-2xl font-bold mb-4">Administrar evaluaciones</h2>
+      <h2 className="text-xl font-bold mb-4">Administrar evaluaciones</h2>
 
       <Table aria-label="Example table with dynamic content">
         <TableHeader>

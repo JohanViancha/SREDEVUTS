@@ -1,6 +1,7 @@
 import { Divider } from "@nextui-org/divider";
 import {
   Button,
+  Chip,
   Modal,
   ModalBody,
   ModalContent,
@@ -10,16 +11,16 @@ import {
   SelectItem,
   Spinner,
 } from "@nextui-org/react";
+import { ref, set } from "firebase/database";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { v4 as uuidv4 } from "uuid";
 import { write } from "xlsx";
+import { db } from "../../firebase.config";
 import { readFileXlsx, uploadXLSX } from "../services/manageFile";
+import { calculateAutoevaluation } from "../services/reportAutoevaluacion";
 import { calculateAverage } from "../services/reportByModule";
 import { calculateCoevaluation } from "../services/reportCoevaluation";
-import { calculateAutoevaluation } from "../services/reportAutoevaluacion";
-import { useEffect, useState } from "react";
-import { getDatabase, ref, set } from "firebase/database";
-import { db } from "../../firebase.config";
-import { v4 as uuidv4 } from "uuid";
 
 const UploadEvaluations = () => {
   const {
@@ -60,15 +61,14 @@ const UploadEvaluations = () => {
   };
 
   const generateReportCoevaluation = async (file: File, directory: string) => {
+    let workbook = await readFileXlsx(file);
+    const sheetNames = workbook.SheetNames;
+    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+    const newWork = calculateCoevaluation(worksheet);
+    workbook.Sheets[sheetNames[0]] = newWork;
 
-      let workbook = await readFileXlsx(file);
-      const sheetNames = workbook.SheetNames;
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const newWork = calculateCoevaluation(worksheet);
-      workbook.Sheets[sheetNames[0]] = newWork;
-  
-      const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-      await uploadXLSX(fileContent, file.name, directory);
+    const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
+    await uploadXLSX(fileContent, file.name, directory);
   };
 
   const generateReportHierarchicalSuperior = async (
@@ -85,7 +85,7 @@ const UploadEvaluations = () => {
     await uploadXLSX(fileContent, file.name, directory);
   };
 
-  const generateReport = async (data) => {
+  const generateReport = async (data: any) => {
     try {
       setStateDialog(1);
       await generateReportForModules(data["for-modules"][0], data.period);
@@ -182,7 +182,9 @@ const UploadEvaluations = () => {
             hover:file:opacity-75"
             {...register("for-modules")}
           />
-          {/* <Chip className="m-auto" size="sm" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
+          <Chip className="m-auto" size="sm" variant="light" color="danger">
+            El cargue del archivo es requerido
+          </Chip>
 
           <Divider orientation="horizontal" />
         </div>
@@ -206,7 +208,9 @@ const UploadEvaluations = () => {
       hover:file:opacity-75"
             {...register("coevaluation")}
           />
-          {/* <Chip size="sm" className="m-auto" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
+          <Chip size="sm" className="m-auto" variant="light" color="danger">
+            El cargue del archivo es requerido
+          </Chip>
 
           <Divider orientation="horizontal" />
         </div>
@@ -231,7 +235,9 @@ const UploadEvaluations = () => {
       hover:file:opacity-75"
             {...register("hierarchical-superior")}
           />
-          {/* <Chip size="sm" className="m-auto" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
+          <Chip size="sm" className="m-auto" variant="light" color="danger">
+            El cargue del archivo es requerido
+          </Chip>
           <Divider orientation="horizontal" />
         </div>
 
@@ -254,7 +260,9 @@ const UploadEvaluations = () => {
       hover:file:opacity-75"
             {...register("autoevaluation")}
           />
-          {/* <Chip size="sm" className="m-auto" variant="light" color="danger">El cargue del archivo es requerido</Chip> */}
+          <Chip size="sm" className="m-auto" variant="light" color="danger">
+            El cargue del archivo es requerido
+          </Chip>
         </div>
 
         <Button color="primary" type="submit">

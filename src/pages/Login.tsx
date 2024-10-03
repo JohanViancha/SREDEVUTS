@@ -18,7 +18,7 @@ import {
 } from "react-icons/md";
 import { PiMicrosoftOutlookLogo } from "react-icons/pi";
 import Logo from "../assets/uts_virtal_logo.png";
-import { auth } from "../../firebase.config.ts"
+import { auth } from "../../firebase.config.ts";
 import { useNavigate } from "react-router-dom";
 
 const provider = new OAuthProvider("microsoft.com");
@@ -39,7 +39,7 @@ const Login = () => {
 
         if (accessToken) {
           navigate("/app/home");
-          sessionStorage.setItem('user', JSON.stringify(result.user))
+          sessionStorage.setItem("user", JSON.stringify(result.user));
         }
       })
       .catch((error) => {
