@@ -33,7 +33,6 @@ const Login = () => {
     signInWithEmailAndPassword(auth, data.email, data.password)
       .then((userCredential) => {
         const user = userCredential.user;
-        let userType = 0;
 
         if (user) {
           navigate("/app/home");
