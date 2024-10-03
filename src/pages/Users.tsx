@@ -47,7 +47,7 @@ const Users = () => {
     defaultValues: {
       id: "",
       name: "",
-      identificationType: "",
+      identificationType: "CC",
       identification: "",
       email: "",
     },
@@ -77,15 +77,14 @@ const Users = () => {
       state: state,
     }).then();
     setIsEdit(false);
-    setUsers([]);
     getUsers();
   };
 
-  const loadUser = (user: User) => {
+  const loadUser = (user: User, key: string) => {
     setIsOpen(true);
     setIsEdit(true);
     setTitleModal("Edición del usuario");
-    setValue("id", user.id);
+    setValue("id", key);
     setValue("name", user.name);
     setValue("identification", user.identification);
     setValue("identificationType", user.identificationType);
@@ -116,12 +115,10 @@ const Users = () => {
         createUserWithEmailAndPassword(auth, user.email, "tuiESV23Sasvmag")
           .then((userCredential) => {
             const userProfile = userCredential.user;
-            
+
             updateProfile(userProfile, {
               displayName: user.name,
-            })
-
-
+            });
           })
           .catch((error) => {
             const errorCode = error.code;
@@ -202,9 +199,9 @@ const Users = () => {
                   <TableCell>{users[key].name}</TableCell>
                   <TableCell>{users[key].identification}</TableCell>
                   <TableCell>
-                    {users[key].identification === "CC"
+                    {users[key].identificationType === "CC"
                       ? "Cédula de Ciudadanía"
-                      : users[key].identification === "TI"
+                      : users[key].identificationType === "TI"
                       ? "Tarjeta de identidad"
                       : "Cédula de Extranjería"}
                   </TableCell>
@@ -239,7 +236,7 @@ const Users = () => {
                       {users[key].state ? (
                         <Tooltip color="danger" content="Inactivar usuario">
                           <span
-                            onClick={() => updateState(false, users[key].id)}
+                            onClick={() => updateState(false, key)}
                             className="text-lg text-danger cursor-pointer active:opacity-50"
                           >
                             <FaUserXmark />
@@ -248,7 +245,7 @@ const Users = () => {
                       ) : (
                         <Tooltip color="success" content="Activar usuario">
                           <span
-                            onClick={() => updateState(true, users[key].id)}
+                            onClick={() => updateState(true, key)}
                             className="text-lg text-success cursor-pointer active:opacity-50"
                           >
                             <FaUserCheck />
@@ -257,7 +254,7 @@ const Users = () => {
                       )}
                       <Tooltip color="warning" content="Editar evaluación">
                         <span
-                          onClick={() => loadUser(users[key])}
+                          onClick={() => loadUser(users[key], key)}
                           className="text-lg text-orange-500 cursor-pointer active:opacity-50"
                         >
                           <MdEdit />

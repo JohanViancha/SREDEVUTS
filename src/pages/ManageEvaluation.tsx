@@ -1,6 +1,11 @@
 import { Chip } from "@nextui-org/chip";
 import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
   Pagination,
+  Spinner,
   Table,
   TableBody,
   TableCell,
@@ -30,6 +35,7 @@ interface Evaluation {
 
 const ManageEvaluation = () => {
   const [evalutions, setEvaluations] = useState<Evaluation[]>([]);
+  const [isSpinner, setisSpinner] = useState(false);
 
   const getEvaluations = () => {
     const starCountRef = refDB(db, "evaluations/");
@@ -39,6 +45,7 @@ const ManageEvaluation = () => {
   };
 
   const downloadFils = async (perid: string) => {
+    setisSpinner(true)
     const storageRef = ref(storage, perid);
 
     try {
@@ -68,7 +75,10 @@ const ManageEvaluation = () => {
       });
     } catch (error) {
       console.log(error);
+      setisSpinner(false)
     }
+
+    setisSpinner(false)
   };
 
   const cancelEvaluation = (id: string) => {
@@ -118,7 +128,7 @@ const ManageEvaluation = () => {
           </TableColumn>
         </TableHeader>
         <TableBody>
-          {Object.keys(evalutions).map((key: any) => {
+          {evalutions && Object.keys(evalutions).map((key: any) => {
             return (
               <TableRow key={key} className="text-left">
                 <TableCell>{evalutions[key].period}</TableCell>
@@ -148,14 +158,16 @@ const ManageEvaluation = () => {
 
                 <TableCell>
                   <div className="relative flex items-center gap-2">
-                    {evalutions[key].state === 1 && <Tooltip color="danger" content="Cancelar evaluación">
-                      <span
-                        onClick={() => cancelEvaluation(key)}
-                        className="text-lg text-danger cursor-pointer active:opacity-50"
-                      >
-                        <AiFillDelete />
-                      </span>
-                    </Tooltip>}
+                    {evalutions[key].state === 1 && (
+                      <Tooltip color="danger" content="Cancelar evaluación">
+                        <span
+                          onClick={() => cancelEvaluation(key)}
+                          className="text-lg text-danger cursor-pointer active:opacity-50"
+                        >
+                          <AiFillDelete />
+                        </span>
+                      </Tooltip>
+                    )}
 
                     <Tooltip color="primary" content="Descargar evaluaciones">
                       <span
@@ -172,6 +184,12 @@ const ManageEvaluation = () => {
           })}
         </TableBody>
       </Table>
+
+      {isSpinner && (
+        <div className="flex justify-center items-center h-screen w-screen fixed z-40 bg-neutral-800 top-0 opacity-90">
+          <Spinner label="Cargando..." color="primary" labelColor="primary" />
+        </div>
+      )}
     </div>
   );
 };

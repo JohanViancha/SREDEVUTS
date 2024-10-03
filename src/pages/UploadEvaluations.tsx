@@ -49,7 +49,11 @@ const UploadEvaluations = () => {
       bookType: "xlsx",
       type: "buffer",
     });
-    await uploadXLSX(fileContent, file.name, directory);
+    await uploadXLSX(
+      fileContent,
+      `Evaluación por modulos-${directory}.xlsx`,
+      directory
+    );
   };
 
   const generateReportAutoevalution = async (file: File, directory: string) => {
@@ -60,7 +64,11 @@ const UploadEvaluations = () => {
     workbook.Sheets[sheetNames[0]] = newWork;
 
     const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-    await uploadXLSX(fileContent, file.name, directory);
+    await uploadXLSX(
+      fileContent,
+      `Autoevaluacion-${directory}.xlsx`,
+      directory
+    );
   };
 
   const generateReportCoevaluation = async (file: File, directory: string) => {
@@ -71,7 +79,7 @@ const UploadEvaluations = () => {
     workbook.Sheets[sheetNames[0]] = newWork;
 
     const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-    await uploadXLSX(fileContent, file.name, directory);
+    await uploadXLSX(fileContent, `Coevaluacion-${directory}.xlsx`, directory);
   };
 
   const generateReportHierarchicalSuperior = async (
@@ -85,7 +93,11 @@ const UploadEvaluations = () => {
     workbook.Sheets[sheetNames[0]] = newWork;
 
     const fileContent = write(workbook, { bookType: "xlsx", type: "buffer" });
-    await uploadXLSX(fileContent, file.name, directory);
+    await uploadXLSX(
+      fileContent,
+      `Evaluación Supeior Jerarquico-${directory}.xlsx`,
+      directory
+    );
   };
 
   const generateReport = async (data: any) => {
@@ -122,7 +134,7 @@ const UploadEvaluations = () => {
   const onClose = () => {
     setStateDialog(0);
     reset();
-    navigate("/app/home");
+    navigate("/app/manage");
   };
 
   useEffect(() => {
