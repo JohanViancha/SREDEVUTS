@@ -1,9 +1,5 @@
 import { Chip } from "@nextui-org/chip";
 import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalHeader,
   Pagination,
   Spinner,
   Table,
@@ -12,7 +8,7 @@ import {
   TableColumn,
   TableHeader,
   TableRow,
-  Tooltip,
+  Tooltip
 } from "@nextui-org/react";
 import { saveAs } from "file-saver";
 import { onValue, ref as refDB, update } from "firebase/database";

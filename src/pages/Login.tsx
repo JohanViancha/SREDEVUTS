@@ -19,8 +19,7 @@ import {
   MdOutlineVisibilityOff,
 } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import { auth, db } from "../../firebase.config.ts";
-import { equalTo, get, orderByChild, query, ref } from "firebase/database";
+import { auth } from "../../firebase.config.ts";
 
 const Login = () => {
   const navigate = useNavigate();
