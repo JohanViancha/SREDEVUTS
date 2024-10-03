@@ -1,5 +1,6 @@
 import { Chip } from "@nextui-org/chip";
 import {
+  Pagination,
   Table,
   TableBody,
   TableCell,
@@ -8,16 +9,16 @@ import {
   TableRow,
   Tooltip,
 } from "@nextui-org/react";
-import { onValue, ref as refDB } from "firebase/database";
+import { saveAs } from "file-saver";
+import { onValue, ref as refDB, update } from "firebase/database";
 import { getDownloadURL, listAll, ref } from "firebase/storage";
+import JSZip from "jszip";
 import { useEffect, useState } from "react";
 import { AiFillDelete } from "react-icons/ai";
+import { FaCloud } from "react-icons/fa";
 import { IoCloudDownload } from "react-icons/io5";
-import { MdEdit } from "react-icons/md";
-import { TbProgress } from "react-icons/tb";
+import { MdCancel } from "react-icons/md";
 import { db, storage } from "../../firebase.config";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
 
 interface Evaluation {
   id: string;
@@ -33,15 +34,7 @@ const ManageEvaluation = () => {
   const getEvaluations = () => {
     const starCountRef = refDB(db, "evaluations/");
     onValue(starCountRef, (snapshot) => {
-      snapshot.forEach((data) => {
-        console.log(data);
-        const newEvaluation = data.val();
-        const key = data.key;
-        setEvaluations((evaluation) => [
-          ...evaluation,
-          { ...newEvaluation, id: key },
-        ]);
-      });
+      setEvaluations(snapshot.val());
     });
   };
 
@@ -71,11 +64,17 @@ const ManageEvaluation = () => {
       }
 
       zip.generateAsync({ type: "blob" }).then((content) => {
-        saveAs(content, perid );
+        saveAs(content, perid);
       });
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const cancelEvaluation = (id: string) => {
+    update(refDB(db, "evaluations/" + `${id}`), {
+      state: 0,
+    }).then();
   };
 
   useEffect(() => {
@@ -86,61 +85,81 @@ const ManageEvaluation = () => {
     <div className="h-100 container flex justify-center flex-col mx-auto items-center gap-6 my-6 px-44 text-center">
       <h2 className="text-xl font-bold mb-4">Administrar evaluaciones</h2>
 
-      <Table aria-label="Example table with dynamic content">
+      <Table
+        aria-label="Example table with dynamic content"
+        bottomContent={
+          <div className="flex w-full justify-center">
+            <Pagination
+              isCompact
+              showControls
+              showShadow
+              color="primary"
+              page={1}
+              total={1}
+            />
+          </div>
+        }
+      >
         <TableHeader>
-          <TableColumn className="bg-primary-300 text-white">
+          <TableColumn className="bg-primary text-white text-sm">
             Periodo
           </TableColumn>
-          <TableColumn className="bg-primary-300 text-white">
+          <TableColumn className="bg-primary text-white text-sm">
             Fecha de cargue
           </TableColumn>
-          <TableColumn className="bg-primary-300 text-white">
+          <TableColumn className="bg-primary text-white text-sm">
             Responsable del cargue
           </TableColumn>
-          <TableColumn className="bg-primary-300 text-white">
+          <TableColumn className="bg-primary text-white text-sm">
             Estado
           </TableColumn>
-          <TableColumn className="bg-primary-300 text-white">
+          <TableColumn className="bg-primary text-white text-sm">
             Acciones
           </TableColumn>
         </TableHeader>
         <TableBody>
-          {evalutions.map((evaluation) => {
+          {Object.keys(evalutions).map((key: any) => {
             return (
-              <TableRow key={evaluation.id} className="text-left">
-                <TableCell>{evaluation.period}</TableCell>
-                <TableCell>{evaluation.uploadDate}</TableCell>
-                <TableCell>{evaluation.responsibleUser}</TableCell>
+              <TableRow key={key} className="text-left">
+                <TableCell>{evalutions[key].period}</TableCell>
+                <TableCell>{evalutions[key].uploadDate}</TableCell>
+                <TableCell>{evalutions[key].responsibleUser}</TableCell>
                 <TableCell>
-                  {evaluation.state === 0 && (
+                  {evalutions[key].state === 1 ? (
                     <Chip
                       className="pl-3"
-                      startContent={<TbProgress size={13} />}
+                      startContent={<FaCloud size={13} />}
                       variant="flat"
-                      color="primary"
+                      color="success"
                     >
-                      En progreso
+                      Cargadas
+                    </Chip>
+                  ) : (
+                    <Chip
+                      className="pl-3"
+                      startContent={<MdCancel size={13} />}
+                      variant="flat"
+                      color="danger"
+                    >
+                      Cancelada
                     </Chip>
                   )}
                 </TableCell>
 
                 <TableCell>
                   <div className="relative flex items-center gap-2">
-                    <Tooltip color="danger" content="Cancelar evaluación">
-                      <span className="text-lg text-danger cursor-pointer active:opacity-50">
+                    {evalutions[key].state === 1 && <Tooltip color="danger" content="Cancelar evaluación">
+                      <span
+                        onClick={() => cancelEvaluation(key)}
+                        className="text-lg text-danger cursor-pointer active:opacity-50"
+                      >
                         <AiFillDelete />
                       </span>
-                    </Tooltip>
-
-                    <Tooltip color="warning" content="Editar evaluación">
-                      <span className="text-lg text-orange-500 cursor-pointer active:opacity-50">
-                        <MdEdit />
-                      </span>
-                    </Tooltip>
+                    </Tooltip>}
 
                     <Tooltip color="primary" content="Descargar evaluaciones">
                       <span
-                        onClick={() => downloadFils(evaluation.period)}
+                        onClick={() => downloadFils(evalutions[key].period)}
                         className="text-lg text-primary-400 cursor-pointer active:opacity-50"
                       >
                         <IoCloudDownload />

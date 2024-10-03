@@ -132,7 +132,7 @@ const UploadEvaluations = () => {
         <Select
           label="Periodo de evaluación"
           className="max-w-xs"
-          {...register("period")}
+          {...register("period", { required: true })}
         >
           <SelectItem
             key={`${dataCurrent.getFullYear()}-01`}
@@ -161,11 +161,15 @@ const UploadEvaluations = () => {
             {`${dataCurrent.getFullYear()}-04`}
           </SelectItem>
         </Select>
-        {/* <Chip size="sm" variant="light" color="danger">Este campo es requerido</Chip> */}
-
-        <div className="w-100 flex flex-col gap-6">
+        {errors["period"] && (
+          <Chip size="sm" variant="light" color="danger">
+            Este campo es requerido
+          </Chip>
+        )}
+        
+        <div className="w-unit-9xl flex flex-col gap-6">
           <h3 className="text-xl font-bold">Evaluación por módulos</h3>
-          <p>
+          <p className="">
             El documento de evaluación docente por módulos es un informe
             estructurado que recoge la evaluación de los docentes en relación
             con los diferentes módulos o materias que imparten.{" "}
@@ -180,16 +184,17 @@ const UploadEvaluations = () => {
             file:text-sm file:font-semibold
             file:border-primary
             hover:file:opacity-75"
-            {...register("for-modules")}
+            {...register("for-modules", { required: true })}
           />
-          <Chip className="m-auto" size="sm" variant="light" color="danger">
-            El cargue del archivo es requerido
-          </Chip>
+          {errors["for-modules"] && (
+            <Chip className="m-auto" size="sm" variant="light" color="danger">
+              El cargue del archivo es requerido
+            </Chip>
+          )}
 
           <Divider orientation="horizontal" />
         </div>
-
-        <div className="w-100 flex flex-col gap-6">
+        <div className="w-unit-9xl flex flex-col gap-6">
           <h3 className="text-xl font-bold mb-4">Coevaluación</h3>
           <p>
             El documento de coevaluación es un informe en el que los docentes
@@ -206,16 +211,17 @@ const UploadEvaluations = () => {
       file:text-sm file:font-semibold
       file:border-primary
       hover:file:opacity-75"
-            {...register("coevaluation")}
+            {...register("coevaluation", { required: true })}
           />
-          <Chip size="sm" className="m-auto" variant="light" color="danger">
-            El cargue del archivo es requerido
-          </Chip>
+          {errors.coevaluation && (
+            <Chip size="sm" className="m-auto" variant="light" color="danger">
+              El cargue del archivo es requerido
+            </Chip>
+          )}
 
           <Divider orientation="horizontal" />
         </div>
-
-        <div className="w-100 flex flex-col gap-6">
+        <div className="w-unit-9xl flex flex-col gap-6">
           <h3 className="text-xl font-bold mb-4">Superior Jerárquico</h3>
           <p>
             El documento de evaluación del superior jerárquico es un informe en
@@ -233,15 +239,16 @@ const UploadEvaluations = () => {
       file:text-sm file:font-semibold
       file:border-primary
       hover:file:opacity-75"
-            {...register("hierarchical-superior")}
+            {...register("hierarchical-superior", { required: true })}
           />
-          <Chip size="sm" className="m-auto" variant="light" color="danger">
-            El cargue del archivo es requerido
-          </Chip>
+          {errors["hierarchical-superior"] && (
+            <Chip size="sm" className="m-auto" variant="light" color="danger">
+              El cargue del archivo es requerido
+            </Chip>
+          )}
           <Divider orientation="horizontal" />
         </div>
-
-        <div className="w-100 flex flex-col gap-6">
+        <div className="w-unit-9xl flex flex-col gap-6">
           <h3 className="text-xl font-bold mb-4">Autoevaluación</h3>
           <p>
             La autoevaluación docente es un proceso reflexivo en el que los
@@ -258,13 +265,14 @@ const UploadEvaluations = () => {
       file:text-sm file:font-semibold
       file:border-primary
       hover:file:opacity-75"
-            {...register("autoevaluation")}
+            {...register("autoevaluation", { required: true })}
           />
-          <Chip size="sm" className="m-auto" variant="light" color="danger">
-            El cargue del archivo es requerido
-          </Chip>
+          {errors.autoevaluation && (
+            <Chip size="sm" className="m-auto" variant="light" color="danger">
+              El cargue del archivo es requerido
+            </Chip>
+          )}
         </div>
-
         <Button color="primary" type="submit">
           Subir archivos
         </Button>
