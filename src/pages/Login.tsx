@@ -1,5 +1,6 @@
 import {
   Button,
+  Divider,
   Input,
   Modal,
   ModalBody,
@@ -8,7 +9,11 @@ import {
   ModalHeader,
 } from "@nextui-org/react";
 
-import { OAuthProvider, signInWithPopup } from "firebase/auth";
+import {
+  OAuthProvider,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+} from "firebase/auth";
 import { useState } from "react";
 import {
   MdEmail,
@@ -20,15 +25,42 @@ import { PiMicrosoftOutlookLogo } from "react-icons/pi";
 import Logo from "../assets/uts_virtal_logo.png";
 import { auth } from "../../firebase.config.ts";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 const provider = new OAuthProvider("microsoft.com");
 
 const Login = () => {
   const navigate = useNavigate();
-
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
   const [isVisiblePassword, setIsVisiblePassword] = useState(false);
+  const [isOpen, setisOpen] = useState(false)
 
   const toggleVisibility = () => setIsVisiblePassword(!isVisiblePassword);
+
+  const loginWithEmailAndPassword = async (data: any) => {
+    signInWithEmailAndPassword(auth, data.email, data.password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+
+        if (user) {
+          navigate("/app/home");
+          sessionStorage.setItem("user", JSON.stringify(user));
+        }else{
+          setisOpen(true)
+        }
+        // ...
+      })
+      .catch((error) => {
+        setisOpen(true)
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
+  };
 
   const loginWithMicrosoft = () => {
     signInWithPopup(auth, provider)
@@ -62,7 +94,11 @@ const Login = () => {
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" action="#" method="POST">
+          <form
+            onSubmit={handleSubmit(loginWithEmailAndPassword)}
+            className="space-y-6"
+            method="POST"
+          >
             <div>
               <label
                 htmlFor="email"
@@ -80,6 +116,7 @@ const Login = () => {
                   startContent={
                     <MdEmail className="text-2xl text-default-400 pointer-events-none flex-shrink-0" />
                   }
+                  {...register("email")}
                 />
               </div>
             </div>
@@ -95,6 +132,7 @@ const Login = () => {
               </div>
               <div className="mt-2">
                 <Input
+                  {...register("password")}
                   variant="bordered"
                   size="lg"
                   placeholder="dy*f45BGS_S"
@@ -121,11 +159,16 @@ const Login = () => {
             </div>
 
             <div className="flex flex-col gap-3">
-              <Button color="primary" className="w-full" variant="solid">
+              <Button
+                type="submit"
+                color="primary"
+                className="w-full"
+                variant="solid"
+              >
                 Ingresar
               </Button>
 
-              <Button
+              {/* <Button
                 onClick={loginWithMicrosoft}
                 color="default"
                 className="w-full"
@@ -133,19 +176,20 @@ const Login = () => {
               >
                 <PiMicrosoftOutlookLogo className="text-2xl text-default-400 pointer-events-none" />
                 Ingresar con el correo institucional
-              </Button>
+              </Button> */}
             </div>
           </form>
         </div>
       </div>
 
-      <Modal backdrop="opaque" isOpen={false}>
+      <Modal backdrop="opaque" isOpen={isOpen}>
         <ModalContent>
           {(onClose) => (
             <>
               <ModalHeader className="flex flex-col gap-1">
                 Validación de credenciales
               </ModalHeader>
+              <Divider />
               <ModalBody>
                 <p>
                   Las credenciales ingresadas son incorrectas. Valida tus datos
@@ -153,7 +197,7 @@ const Login = () => {
                 </p>
               </ModalBody>
               <ModalFooter>
-                <Button color="primary" onPress={onClose}>
+                <Button onClick={()=> setisOpen(false)} color="primary" onPress={onClose}>
                   Ok
                 </Button>
               </ModalFooter>

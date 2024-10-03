@@ -26,9 +26,11 @@ import { FaAddressCard, FaCheck, FaUser, FaUserCheck } from "react-icons/fa";
 import { FaUserXmark } from "react-icons/fa6";
 import { IoMdClose } from "react-icons/io";
 import { MdAlternateEmail, MdEdit } from "react-icons/md";
-import { db } from "../../firebase.config";
+import { auth, db } from "../../firebase.config";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { digits, lower, randomPassword, upper } from "secure-random-password";
 
 interface User {
   id: string;
@@ -74,19 +76,15 @@ const Users = () => {
   const getUsers = () => {
     const starCountRef = refDB(db, "users/");
     onValue(starCountRef, (snapshot) => {
-      snapshot.forEach((data) => {
-        const newUser = data.val();
-        const key = data.key;
-        setUsers((evaluation) => [...evaluation, { ...newUser, id: key }]);
-      });
+      setUsers(snapshot.val());
     });
   };
 
   const updateState = (state: boolean, id: string) => {
-    console.log(id, state)
     update(ref(db, "users/" + `${id}`), {
       state: state,
     }).then();
+    setIsEdit(false);
     setUsers([]);
     getUsers();
   };
@@ -122,6 +120,20 @@ const Users = () => {
           userType: 1,
           createDate: new Date().toLocaleString(),
         }).then();
+
+      
+
+        createUserWithEmailAndPassword(auth, user.email, 'tuiESV23Sasvmag')
+          .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            // ...
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            // ..
+          });
       }
 
       setIsOpen(false);
@@ -136,7 +148,6 @@ const Users = () => {
   };
 
   useEffect(() => {
-    setUsers([]);
     getUsers();
   }, []);
 
@@ -148,7 +159,6 @@ const Users = () => {
           Crear nuevo usuario
         </Button>
       </div>
-
       <Table
         aria-label="table with dynamic content"
         bottomContent={
@@ -160,7 +170,6 @@ const Users = () => {
               color="primary"
               page={1}
               total={1}
-              //   onChange={(page) => setPage(page)}
             />
           </div>
         }
@@ -192,25 +201,25 @@ const Users = () => {
           </TableColumn>
         </TableHeader>
         <TableBody>
-          {users.map((user) => {
+          {Object.keys(users).map((key: any) => {
             return (
-              <TableRow key={user.id} className="text-left">
-                <TableCell>{user.name}</TableCell>
-                <TableCell>{user.identification}</TableCell>
+              <TableRow key={key} className="text-left">
+                <TableCell>{users[key].name}</TableCell>
+                <TableCell>{users[key].identification}</TableCell>
                 <TableCell>
-                  {user.identification === "CC"
+                  {users[key].identification === "CC"
                     ? "Cédula de Ciudadanía"
-                    : user.identification === "TI"
+                    : users[key].identification === "TI"
                     ? "Tarjeta de identidad"
                     : "Cédula de Extranjería"}
                 </TableCell>
-                <TableCell>{user.email}</TableCell>
+                <TableCell>{users[key].email}</TableCell>
                 <TableCell>
-                  {user.userType === 1 ? "Operativo" : "Administrador"}
+                  {users[key].userType === 1 ? "Operativo" : "Administrador"}
                 </TableCell>
-                <TableCell>{user.createDate}</TableCell>
+                <TableCell>{users[key].createDate}</TableCell>
                 <TableCell>
-                  {user.state ? (
+                  {users[key].state ? (
                     <Chip
                       className="pl-3"
                       startContent={<FaCheck size={13} />}
@@ -232,22 +241,28 @@ const Users = () => {
                 </TableCell>
                 <TableCell>
                   <div className="relative flex items-center gap-2">
-                    {user.state ? (
+                    {users[key].state ? (
                       <Tooltip color="danger" content="Inactivar usuario">
-                        <span key={`${user.id}-1`} onClick={()=> updateState(false, user.id)} className="text-lg text-danger cursor-pointer active:opacity-50">
+                        <span
+                          onClick={() => updateState(false, users[key].id)}
+                          className="text-lg text-danger cursor-pointer active:opacity-50"
+                        >
                           <FaUserXmark />
                         </span>
                       </Tooltip>
                     ) : (
                       <Tooltip color="success" content="Activar usuario">
-                        <span key={`${user.id}-2`} onClick={()=> updateState(true, user.id)} className="text-lg text-success cursor-pointer active:opacity-50">
+                        <span
+                          onClick={() => updateState(true, users[key].id)}
+                          className="text-lg text-success cursor-pointer active:opacity-50"
+                        >
                           <FaUserCheck />
                         </span>
                       </Tooltip>
                     )}
                     <Tooltip color="warning" content="Editar evaluación">
                       <span
-                        onClick={() => loadUser(user)}
+                        onClick={() => loadUser(users[key])}
                         className="text-lg text-orange-500 cursor-pointer active:opacity-50"
                       >
                         <MdEdit />
