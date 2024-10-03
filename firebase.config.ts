@@ -4,14 +4,14 @@ import { getDatabase } from "firebase/database";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY,
-  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_APP_ID,
-  measurementId: import.meta.env.VITE_MEASUREMENT_ID,
-  databaseURL: import.meta.env.VITE_DATABASE_URL,
+  apiKey: "AIzaSyDTwK1duk4LJIs4qwyNBBa6J6EfvwB6IRA",
+  authDomain: "sredevuts.firebaseapp.com",
+  projectId: "sredevuts",
+  storageBucket: "sredevuts.appspot.com",
+  messagingSenderId: "643364833123",
+  appId: "1:643364833123:web:30c2bc58dadaaf61a87556",
+  measurementId: "G-9WSB06ZF09",
+  databaseURL: "https://sredevuts-default-rtdb.firebaseio.com/",
 };
 
 const app = initializeApp(firebaseConfig);
